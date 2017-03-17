@@ -22,7 +22,8 @@ The goals for this project is to detect vehicles in an image, that is placed in 
 [image5]: ./images/bboxes_and_heat.png
 [image6]: ./images/labels_map.png
 [image7]: ./images/output_bboxes.png
-[video1]: ./project_video.mp4
+[image8]: ./images/features.png
+[video1]: ./project_output.mp4
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ### Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -45,6 +46,8 @@ Here is an example using the `YCrCb` color space and HOG parameters of `orientat
 ![alt text][image2]
 
 
+> Reference: `vehicle_detection.py` in lines ``.
+
 #### HOG parameters.
 
 I tried various combinations of parameters and for HOG features and compared the performance in both testing images and the testing video to get a better general feel. That is how I ended up with the following parameters:
@@ -63,20 +66,32 @@ hist_feat = True
 hog_feat = True
 ```
 
+> Reference: `vehicle_detection.py` in lines `00`.
+
+After extracting all the features, the
+
+~[feature set][image8]
+
 
 #### Linear Classifier SVM
 
 I trained a linear SVM using the hog and color features from the`cars` and `non-cars` vehicles dataset. This classifier will help us identify a car in patches or windows of the video frames. Before training the classifier, all the features were scaled, so as to reduce the weight of any given feature.
 
+To optimize the classifier, I used `GridSearchCV` to tune the `C` parameters. In the end the SVM achieved an accuracy of `99%`.
+
+> Reference: `vehicle_detection.py` in lines `00`.
 
 
 ### Sliding Window Search
 
-#### 
-
 I used a sliding window search to look for cars. I took different window sizes to look for vehicles in areas of the picture were it made most sense. The following window sizes were used: `64`, `96` and `128`.
 
+Using sliding windows helps search for cars throughout the whole image. Using different windows sizes lets the classifier look for cars that are at different distances, the closer the car the bigger the window we need to see it and classify it. Having different window sizes also helps by having redundancies in the classification. The image below shows the whole search space for the windows used in the sliding windows search.
+
 ![alt text][image3]
+
+> Reference: `vehicle_detection.py` in lines `00`.
+
 
 #### Improving classifier 
 
@@ -93,16 +108,19 @@ Here's a [link to my video result](./project_output.mp4).
 
 #### Filters and False Positives
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected. I used a moving average of the heatmap to give a smoother result.
 
 Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
+
+![heatmap][image5]
+
+
+> Reference: `vehicle_detection.py` in lines ``.
 
 ### Here are six frames and their corresponding heatmaps:
 
 ![alt text][image5]
 
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
 
 ### Here the resulting bounding boxes are drawn onto the last frame in the series:
 ![alt text][image7]
@@ -113,7 +131,7 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ### Discussion
 
-#### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
+#### Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 
 There were many challenges building the pipeline. The project depens on many parameters that were hand tuned, and are probably not generalized outside the training set. It is very time consuming to test out different feature and parameter sets.
